@@ -1,0 +1,12 @@
+parameters:
+    level: 7
+    bootstrapFiles:
+        - phpstan-bootstrap.php
+    paths:
+        - src
+    tmpDir: tests/.phpstan.cache
+    ignoreErrors:
+        -
+            message: '#expects list<class-string>, array<string> given#'
+            path: src/ServiceBootstrapper.php
+            count: 1
