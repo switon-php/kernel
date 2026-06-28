@@ -13,7 +13,7 @@ class ServiceBootstrappedTest extends TestCase
     public function testServiceBootstrappedEventCanBeInstantiated(): void
     {
         $providers = ['Provider1', 'Provider2', 'Provider3'];
-        $event = new ServiceBootstrapped($providers);
+        $event = new ServiceBootstrapped($this->createStub(\Switon\Kernel\ServiceBootstrapper::class), $providers);
 
         $this->assertInstanceOf(ServiceBootstrapped::class, $event);
     }
@@ -26,14 +26,14 @@ class ServiceBootstrappedTest extends TestCase
             'Switon\\Http\\ServiceProvider',
         ];
 
-        $event = new ServiceBootstrapped($providers);
+        $event = new ServiceBootstrapped($this->createStub(\Switon\Kernel\ServiceBootstrapper::class), $providers);
 
         $this->assertSame($providers, $event->providers);
     }
 
     public function testServiceBootstrappedEventWithEmptyProviders(): void
     {
-        $event = new ServiceBootstrapped([]);
+        $event = new ServiceBootstrapped($this->createStub(\Switon\Kernel\ServiceBootstrapper::class), []);
 
         $this->assertInstanceOf(ServiceBootstrapped::class, $event);
         $this->assertSame([], $event->providers);
@@ -44,9 +44,12 @@ class ServiceBootstrappedTest extends TestCase
         $reflection = new ReflectionClass(ServiceBootstrapped::class);
         $properties = $reflection->getProperties();
 
-        $this->assertCount(1, $properties);
+        $this->assertCount(2, $properties);
 
-        $providersProperty = $properties[0];
+        $senderProperty = $properties[0];
+        $providersProperty = $properties[1];
+        $this->assertSame('sender', $senderProperty->getName());
+        $this->assertTrue($senderProperty->isPublic());
         $this->assertSame('providers', $providersProperty->getName());
         $this->assertTrue($providersProperty->isPublic());
     }

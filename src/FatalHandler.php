@@ -91,6 +91,7 @@ class FatalHandler implements FatalHandlerInterface
             /** @var array{type: int, message?: string, file?: string, line?: int} $error */
             $type = $error['type'];
             $this->eventDispatcher->dispatch(new FatalErrorOccurred(
+                $this,
                 $error['message'] ?? 'Unknown fatal error',
                 $error['file'] ?? 'unknown',
                 $error['line'] ?? 0,

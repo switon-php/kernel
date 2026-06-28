@@ -78,7 +78,7 @@ class ServiceBootstrapper
         $this->bootProviders($providers);
 
         if ($this->container->has(EventDispatcherInterface::class)) {
-            $this->eventDispatcher->dispatch(new ServiceBootstrapped($providerClasses));
+            $this->eventDispatcher->dispatch(new ServiceBootstrapped($this, $providerClasses));
         }
     }
 

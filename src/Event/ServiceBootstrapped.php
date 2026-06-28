@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Switon\Kernel\Event;
 
+use Switon\Kernel\ServiceBootstrapper;
+use Switon\Core\SenderAwareInterface;
+
 /**
  * Service bootstrap completed event.
  *
@@ -16,13 +19,19 @@ namespace Switon\Kernel\Event;
  * @see \Switon\Kernel\ServiceBootstrapper::bootstrap()
  * @see \Switon\Core\ServiceProviderInterface
  */
-readonly class ServiceBootstrapped
+readonly class ServiceBootstrapped implements SenderAwareInterface
 {
     /**
      * @param array<string> $providers Provider class names that were bootstrapped
      */
     public function __construct(
+        public ServiceBootstrapper $sender,
         public array $providers
     ) {
+    }
+
+    public function getSender(): ServiceBootstrapper
+    {
+        return $this->sender;
     }
 }

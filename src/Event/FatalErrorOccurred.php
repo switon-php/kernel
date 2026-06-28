@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Switon\Kernel\Event;
 
+use Switon\Kernel\FatalHandlerInterface;
+use Switon\Core\SenderAwareInterface;
 use Switon\Eventing\Attribute\EventLevel;
 use Switon\Eventing\Severity;
 
@@ -18,13 +20,19 @@ use Switon\Eventing\Severity;
  * @see \Switon\Kernel\FatalHandler
  */
 #[EventLevel(Severity::ERROR)]
-class FatalErrorOccurred
+class FatalErrorOccurred implements SenderAwareInterface
 {
     public function __construct(
+        public FatalHandlerInterface $sender,
         public string $message,
         public string $file,
         public int    $line,
         public string $type,
     ) {
+    }
+
+    public function getSender(): FatalHandlerInterface
+    {
+        return $this->sender;
     }
 }
