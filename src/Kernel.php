@@ -8,6 +8,7 @@ use Psr\Log\LoggerInterface;
 use ReflectionClass;
 use Switon\Core\App;
 use Switon\Core\AppInterface;
+use Switon\Core\Attributes;
 use Switon\Core\Attribute\Autowired;
 use Switon\Core\Attribute\Scene;
 use Switon\Core\InjectorInterface;
@@ -260,13 +261,10 @@ class Kernel implements KernelInterface
      */
     protected function applyClassScene(): void
     {
-        $attributes = (new ReflectionClass($this))->getAttributes(Scene::class);
-        if ($attributes === []) {
+        $scene = Attributes::first(new ReflectionClass($this), Scene::class);
+        if ($scene === null) {
             return;
         }
-
-        /** @var Scene $scene */
-        $scene = $attributes[0]->newInstance();
         if ($scene->name !== '') {
             $this->sceneManager->setScene($scene->name);
         }
