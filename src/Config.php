@@ -10,10 +10,13 @@ use Switon\Yaml\YamlReader;
 
 use function file_get_contents;
 use function getenv;
-use function glob;
 use function is_array;
 use function is_dir;
 use function is_file;
+use function scandir;
+use function str_ends_with;
+use function str_starts_with;
+use function strlen;
 
 /**
  * Loads user configuration during kernel bootstrap.
@@ -54,19 +57,23 @@ class Config
      * Files starting with <code>.</code> are ignored. Merging uses array union, so
      * the first definition for a duplicated service ID is kept.
      *
+     * Uses <code>scandir()</code> rather than <code>glob()</code> because glob does not
+     * list <code>phar://</code> archives, while a packaged application keeps its config
+     * inside the read-only archive.
+     *
      * @return array<string, mixed> Merged configuration definitions
      */
     public function loadFromDirectory(): array
     {
         $configs = [];
 
-        foreach (glob("$this->dir/*.php") ?: [] as $file) {
+        foreach (scandir($this->dir) ?: [] as $name) {
             // Ignore dotfiles (hidden files) in configuration directory
-            if (str_starts_with(basename($file), '.')) {
+            if (str_starts_with($name, '.') || !str_ends_with($name, '.php')) {
                 continue;
             }
 
-            $config = require $file;
+            $config = require "$this->dir/$name";
             if (is_array($config)) {
                 $configs += $config;
             }
