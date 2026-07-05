@@ -31,7 +31,7 @@ class StartupExceptionTestKernel extends Kernel
         $this->handleStartupException($e);
     }
 
-    protected function bootstrap(): void
+    public function bootstrap(): Container
     {
         throw $this->bootstrapException ?? new RuntimeException('Bootstrap failed');
     }

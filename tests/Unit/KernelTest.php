@@ -119,41 +119,8 @@ class KernelTest extends TestCase
                 return $this->root;
             }
         };
-        $detectedRoot = $kernel->getRootForTest();
 
-        $expectedRoot = null;
-        foreach (get_included_files() as $file) {
-            if (str_ends_with($file, 'vendor/autoload.php')) {
-                $expectedRoot = dirname($file, 2);
-                break;
-            }
-        }
-
-        $this->assertIsString($detectedRoot);
-        $this->assertNotEmpty($detectedRoot);
-        $this->assertNotNull($expectedRoot);
-        $this->assertSame($expectedRoot, $detectedRoot);
-    }
-
-    public function testDetectRootThrowsWhenAutoloadFileCannotBeFound(): void
-    {
-        KernelFunctionOverrides::$includedFiles = [$this->tempDir . '/index.php'];
-
-        $kernel = new class () extends Kernel {
-            public function __construct()
-            {
-            }
-
-            public function exposedDetectRoot(): string
-            {
-                return $this->detectRoot();
-            }
-        };
-
-        $this->expectException(\Switon\Kernel\Exception\RootDirectoryNotFoundException::class);
-        $this->expectExceptionMessage('autoload.php not found');
-
-        $kernel->exposedDetectRoot();
+        $this->assertSame(Runtime::getRoot(), $kernel->getRootForTest());
     }
 
     public function testLoadConfigReturnsEmptyArrayWhenConfigDirNotExists(): void

@@ -7,10 +7,10 @@ namespace Switon\Kernel\Tests\Support;
 use Stringable;
 use Switon\Core\ConsoleInterface;
 
-final class BufferedConsole implements ConsoleInterface
+class BufferedConsole implements ConsoleInterface
 {
     /** @var list<string> */
-    private array $output = [];
+    protected array $output = [];
 
     /** @return list<string> */
     public function getOutput(): array

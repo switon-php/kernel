@@ -6,25 +6,9 @@ namespace Switon\Kernel\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 use Switon\Kernel\Exception\MalformedEnvFileException;
-use Switon\Kernel\Exception\RootDirectoryNotFoundException;
 
 class ExceptionTest extends TestCase
 {
-    public function testRootDirectoryNotFoundExceptionContainsHelpfulMessage(): void
-    {
-        // Act & Assert
-        try {
-            RootDirectoryNotFoundException::raise(
-                'Cannot automatically detect project root directory: autoload.php not found in included files. '
-                . 'Please provide $root parameter to Kernel constructor'
-            );
-            $this->fail('Expected RootDirectoryNotFoundException to be thrown');
-        } catch (RootDirectoryNotFoundException $e) {
-            $this->assertStringContainsString('autoload.php', $e->getMessage());
-            $this->assertStringContainsString('Kernel constructor', $e->getMessage());
-        }
-    }
-
     public function testMalformedEnvFileExceptionContainsHelpfulMessage(): void
     {
         // Act & Assert

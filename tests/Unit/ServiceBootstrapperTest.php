@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Switon\Kernel\Tests\Unit;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Switon\ComposerExtra\ComposerExtraInterface;
 use Switon\Core\Attribute\Autowired;
@@ -23,14 +24,10 @@ class ServiceBootstrapperTest extends TestCase
 {
     public function testBootstrapWithNoProviders(): void
     {
-        $composerExtra = $this->createMock(ComposerExtraInterface::class);
-        $composerExtra->expects($this->once())
-            ->method('collect')
-            ->with('switon.providers')
-            ->willReturn([]);
-
         $container = $this->createMock(ContainerInterface::class);
-        $container->method('has')->with(EventDispatcherInterface::class)->willReturn(true);
+        $container->method('has')->willReturnCallback(
+            static fn (string $id): bool => $id === EventDispatcherInterface::class,
+        );
         $container->expects($this->never())->method('set');
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
@@ -41,7 +38,7 @@ class ServiceBootstrapperTest extends TestCase
             }));
 
         $bootstrapper = $this->make(ServiceBootstrapper::class, [
-            'composerExtra' => $composerExtra,
+            'composerExtra' => $this->composerExtraMock(),
             'container' => $container,
             'eventDispatcher' => $eventDispatcher,
         ]);
@@ -52,12 +49,6 @@ class ServiceBootstrapperTest extends TestCase
     public function testBootstrapWithProviders(): void
     {
         $testProviderClass = TestServiceProvider::class;
-
-        $composerExtra = $this->createMock(ComposerExtraInterface::class);
-        $composerExtra->expects($this->once())
-            ->method('collect')
-            ->with('switon.providers')
-            ->willReturn([$testProviderClass]);
 
         $container = $this->createStub(ContainerInterface::class);
         $container->method('has')->willReturn(true);
@@ -76,7 +67,7 @@ class ServiceBootstrapperTest extends TestCase
             }));
 
         $bootstrapper = $this->make(ServiceBootstrapper::class, [
-            'composerExtra' => $composerExtra,
+            'composerExtra' => $this->composerExtraMock([$testProviderClass]),
             'container' => $container,
             'injector' => $injector,
             'eventDispatcher' => $eventDispatcher,
@@ -87,12 +78,6 @@ class ServiceBootstrapperTest extends TestCase
 
     public function testBootstrapWithConfigurations(): void
     {
-        $composerExtra = $this->createMock(ComposerExtraInterface::class);
-        $composerExtra->expects($this->once())
-            ->method('collect')
-            ->with('switon.providers')
-            ->willReturn([]);
-
         $setCallCount = 0;
         $container = $this->createMock(ContainerInterface::class);
         $container->method('has')->willReturn(false);
@@ -115,7 +100,7 @@ class ServiceBootstrapperTest extends TestCase
         $eventDispatcher = $this->createStub(EventDispatcherInterface::class);
 
         $bootstrapper = $this->make(ServiceBootstrapper::class, [
-            'composerExtra' => $composerExtra,
+            'composerExtra' => $this->composerExtraMock(),
             'container' => $container,
             'eventDispatcher' => $eventDispatcher,
         ]);
@@ -128,12 +113,6 @@ class ServiceBootstrapperTest extends TestCase
 
     public function testBootstrapRunsAfterRegisterHookAfterConfigurations(): void
     {
-        $composerExtra = $this->createMock(ComposerExtraInterface::class);
-        $composerExtra->expects($this->once())
-            ->method('collect')
-            ->with('switon.providers')
-            ->willReturn([]);
-
         $setCallCount = 0;
         $container = $this->createMock(ContainerInterface::class);
         $container->method('has')->willReturn(false);
@@ -147,7 +126,7 @@ class ServiceBootstrapperTest extends TestCase
         $eventDispatcher = $this->createStub(EventDispatcherInterface::class);
 
         $bootstrapper = $this->make(ServiceBootstrapper::class, [
-            'composerExtra' => $composerExtra,
+            'composerExtra' => $this->composerExtraMock(),
             'container' => $container,
             'eventDispatcher' => $eventDispatcher,
         ]);
@@ -169,12 +148,6 @@ class ServiceBootstrapperTest extends TestCase
     {
         $testProviderClass = TestServiceProvider::class;
 
-        $composerExtra = $this->createMock(ComposerExtraInterface::class);
-        $composerExtra->expects($this->once())
-            ->method('collect')
-            ->with('switon.providers')
-            ->willReturn([$testProviderClass]);
-
         $container = $this->createStub(ContainerInterface::class);
         $container->method('has')->willReturn(true);
 
@@ -192,7 +165,7 @@ class ServiceBootstrapperTest extends TestCase
             }));
 
         $bootstrapper = $this->make(ServiceBootstrapper::class, [
-            'composerExtra' => $composerExtra,
+            'composerExtra' => $this->composerExtraMock([$testProviderClass]),
             'container' => $container,
             'injector' => $injector,
             'eventDispatcher' => $eventDispatcher,
@@ -203,16 +176,6 @@ class ServiceBootstrapperTest extends TestCase
 
     public function testBootstrapSkipsPreRegisteredProvidersDiscoveredFromComposerExtra(): void
     {
-        $composerExtra = $this->createMock(ComposerExtraInterface::class);
-        $composerExtra->expects($this->once())
-            ->method('collect')
-            ->with('switon.providers')
-            ->willReturn([
-                PreRegisteredProviderA::class,
-                PreRegisteredProviderB::class,
-                TestServiceProvider::class,
-            ]);
-
         $container = $this->createStub(ContainerInterface::class);
         $container->method('has')->willReturn(true);
 
@@ -230,7 +193,11 @@ class ServiceBootstrapperTest extends TestCase
             }));
 
         $bootstrapper = $this->make(ServiceBootstrapper::class, [
-            'composerExtra' => $composerExtra,
+            'composerExtra' => $this->composerExtraMock([
+                PreRegisteredProviderA::class,
+                PreRegisteredProviderB::class,
+                TestServiceProvider::class,
+            ]),
             'container' => $container,
             'injector' => $injector,
             'eventDispatcher' => $eventDispatcher,
@@ -246,16 +213,10 @@ class ServiceBootstrapperTest extends TestCase
     {
         ResourceAliasServiceProvider::$bootAlias = null;
 
-        $composerExtra = $this->createMock(ComposerExtraInterface::class);
-        $composerExtra->expects($this->once())
-            ->method('collect')
-            ->with('switon.providers')
-            ->willReturn([
-                ResourceAliasServiceProvider::class,
-            ]);
-
         $bootstrapper = $this->make(ServiceBootstrapper::class, [
-            'composerExtra' => $composerExtra,
+            'composerExtra' => $this->composerExtraMock([
+                ResourceAliasServiceProvider::class,
+            ]),
         ]);
 
         $bootstrapper->bootstrap();
@@ -271,16 +232,10 @@ class ServiceBootstrapperTest extends TestCase
     {
         CustomResourceAliasServiceProvider::$bootAlias = null;
 
-        $composerExtra = $this->createMock(ComposerExtraInterface::class);
-        $composerExtra->expects($this->once())
-            ->method('collect')
-            ->with('switon.providers')
-            ->willReturn([
-                CustomResourceAliasServiceProvider::class,
-            ]);
-
         $bootstrapper = $this->make(ServiceBootstrapper::class, [
-            'composerExtra' => $composerExtra,
+            'composerExtra' => $this->composerExtraMock([
+                CustomResourceAliasServiceProvider::class,
+            ]),
         ]);
 
         $bootstrapper->bootstrap();
@@ -290,6 +245,30 @@ class ServiceBootstrapperTest extends TestCase
 
         $this->assertSame($expected, CustomResourceAliasServiceProvider::$bootAlias);
         $this->assertSame($expected, $pathAlias->get('@switon.kernel.fixtures'));
+    }
+
+    /**
+     * Bootstrap now collects both providers and tools metadata.
+     *
+     * @param list<class-string> $providers
+     * @param array<string, class-string> $tools
+     *
+     * @return ComposerExtraInterface&MockObject
+     */
+    protected function composerExtraMock(array $providers = [], array $tools = []): ComposerExtraInterface
+    {
+        $composerExtra = $this->createMock(ComposerExtraInterface::class);
+        $composerExtra->expects($this->atLeast(1))
+            ->method('collect')
+            ->willReturnCallback(static function (string $key) use ($providers, $tools): array {
+                return match ($key) {
+                    'switon.providers' => $providers,
+                    'switon.tools' => $tools,
+                    default => [],
+                };
+            });
+
+        return $composerExtra;
     }
 }
 

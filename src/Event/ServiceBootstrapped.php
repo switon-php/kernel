@@ -19,7 +19,7 @@ use Switon\Core\SenderAwareInterface;
  * @see \Switon\Kernel\ServiceBootstrapper::bootstrap()
  * @see \Switon\Core\ServiceProviderInterface
  */
-readonly class ServiceBootstrapped implements SenderAwareInterface
+class ServiceBootstrapped implements SenderAwareInterface
 {
     /**
      * @param array<string> $providers Provider class names that were bootstrapped

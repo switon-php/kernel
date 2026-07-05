@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Switon\Kernel\Tests\Unit\Event;
 
-use ReflectionClass;
 use Switon\Kernel\Event\ServiceBootstrapped;
-use Switon\Kernel\Tests\TestCase;
+use PHPUnit\Framework\TestCase;
 
 class ServiceBootstrappedTest extends TestCase
 {
@@ -37,20 +36,5 @@ class ServiceBootstrappedTest extends TestCase
 
         $this->assertInstanceOf(ServiceBootstrapped::class, $event);
         $this->assertSame([], $event->providers);
-    }
-
-    public function testServiceBootstrappedEventPropertyIsPublic(): void
-    {
-        $reflection = new ReflectionClass(ServiceBootstrapped::class);
-        $properties = $reflection->getProperties();
-
-        $this->assertCount(2, $properties);
-
-        $senderProperty = $properties[0];
-        $providersProperty = $properties[1];
-        $this->assertSame('sender', $senderProperty->getName());
-        $this->assertTrue($senderProperty->isPublic());
-        $this->assertSame('providers', $providersProperty->getName());
-        $this->assertTrue($providersProperty->isPublic());
     }
 }

@@ -18,11 +18,9 @@ use Switon\Core\SceneManagerInterface;
 use Switon\Di\Container;
 use Switon\Di\ServiceProvider as DiServiceProvider;
 use Switon\Kernel\Exception\ConfigLoadException;
-use Switon\Kernel\Exception\RootDirectoryNotFoundException;
 use Throwable;
 
 use function date_default_timezone_set;
-use function dirname;
 use function is_array;
 
 /**
@@ -32,7 +30,7 @@ use function is_array;
  * and fatal error handling before handing control to a concrete runtime entrypoint.
  *
  * Road-signs:
- * - detect root
+ * - root via {@see Runtime::getRoot()}
  * - env + config
  * - apply class Scene after config registration
  * - kernel config may extend `services`
@@ -80,19 +78,21 @@ class Kernel implements KernelInterface
      */
     #[Autowired] protected AppInterface|Lazy $app;
     #[Autowired] protected SceneManagerInterface|Lazy $sceneManager;
+
     #[Autowired] protected ServiceBootstrapper $serviceBootstrapper;
+
     #[Autowired] protected FatalHandlerInterface|Lazy $fatalHandler;
 
     /**
      * Initialize kernel with project root directory.
      *
-     * @param string|null $root Project root directory, auto-detected if null
+     * @param string|null $root Project root directory, auto-detected via {@see Runtime::getRoot()} if null
      *
-     * @throws \Switon\Kernel\Exception\RootDirectoryNotFoundException If root cannot be detected
+     * @throws \Switon\Core\Exception\ProjectRootDetectionException If root cannot be detected
      */
     public function __construct(?string $root = null)
     {
-        $this->root = $root ?? $this->detectRoot();
+        $this->root = $root ?? Runtime::getRoot();
     }
 
     /**
@@ -111,37 +111,6 @@ class Kernel implements KernelInterface
     }
 
     /**
-     * Detects the project root directory automatically.
-     *
-     * Searches for autoload.php in included files and derives root directory from it.
-     * Assumes standard Composer structure: root/vendor/autoload.php
-     *
-     * Detection Process:
-     * 1. Gets all currently included PHP files
-     * 2. Finds the first file ending with "vendor/autoload.php"
-     * 3. Returns the directory two levels up (vendor/../..)
-     *
-     * @return string Project root directory path
-     *
-     * @throws \Switon\Kernel\Exception\RootDirectoryNotFoundException If autoload.php is not found in included files
-     */
-    protected function detectRoot(): string
-    {
-        $includedFiles = get_included_files();
-
-        foreach ($includedFiles as $file) {
-            if (str_ends_with($file, 'vendor/autoload.php')) {
-                return dirname($file, 2);
-            }
-        }
-
-        RootDirectoryNotFoundException::raise(
-            'Cannot automatically detect project root directory: autoload.php not found in included files. '
-            . 'Please provide $root parameter to Kernel constructor: new Kernel(__DIR__ . \'/..\')'
-        );
-    }
-
-    /**
      * Bootstraps the application: loads env, creates the container, registers services, and installs fatal handling.
      *
      * This method initializes the core framework components in the correct order:
@@ -151,8 +120,10 @@ class Kernel implements KernelInterface
      * 4. Load user configuration
      * 5. Bootstrap services (register providers, load config, boot providers)
      * 6. Set timezone and register the fatal shutdown handler
+     *
+     * @return Container Booted application container
      */
-    protected function bootstrap(): void
+    public function bootstrap(): Container
     {
         $this->loadEnv();
 
@@ -185,6 +156,8 @@ class Kernel implements KernelInterface
         date_default_timezone_set($this->app->timezone());
 
         $this->fatalHandler->register();
+
+        return $this->container;
     }
 
     /**

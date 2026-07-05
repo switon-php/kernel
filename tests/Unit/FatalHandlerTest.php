@@ -12,7 +12,7 @@ use Switon\Kernel\FatalHandler;
 use Switon\Kernel\Tests\Fixtures\KernelFunctionOverrides;
 use Switon\Kernel\Tests\Fixtures\TestableFatalHandler;
 use Switon\Kernel\Tests\Fixtures\TestableFatalHandlerUnknownErrorLabel;
-use Switon\Kernel\Tests\TestCase;
+use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../Fixtures/KernelFunctionOverrides.php';
 require_once __DIR__ . '/../Fixtures/KernelFunctions.php';
