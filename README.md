@@ -36,7 +36,7 @@ class AppKernel extends Kernel
 (new AppKernel(__DIR__))->start();
 ```
 
-Docs: https://docs.switon.dev/latest/kernel
+Docs: https://github.com/switon-php/kernel/blob/main/docs/README.md
 
 ## License
 

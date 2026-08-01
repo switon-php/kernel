@@ -19,7 +19,7 @@
     "support": {
         "source": "https://github.com/switon-php/kernel",
         "issues": "https://github.com/switon-php/kernel/issues",
-        "docs": "https://docs.switon.dev/latest/kernel"
+        "docs": "https://github.com/switon-php/kernel/blob/main/docs/README.md"
     },
     "require": {
         "php": ">=8.3",
