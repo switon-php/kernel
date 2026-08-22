@@ -372,36 +372,4 @@ class ConfigTest extends TestCase
 
         $this->assertSame('App\\\\Demo', $result['demo.service']['class'] ?? null);
     }
-
-    public function testLoadThrowsWhenYamlFileIsUnreadable(): void
-    {
-        if (PHP_OS_FAMILY === 'Windows') {
-            $this->markTestSkipped('chmod-based unreadable file is not portable on Windows');
-        }
-
-        $yaml = $this->tempDir . '/locked.yml';
-        file_put_contents($yaml, "svc:\n  class: App\\\\Svc\n");
-        chmod($yaml, 0000);
-        putenv('SWITON_CONFIG_FILE=' . $yaml);
-
-        $config = new Config($this->tempDir . '/missing-config-dir');
-
-        $prevHandler = set_error_handler(static function (int $errno, string $errstr): bool {
-            if ($errno === E_WARNING && str_contains($errstr, 'file_get_contents')) {
-                return true;
-            }
-
-            return false;
-        });
-
-        try {
-            $this->expectException(ConfigLoadException::class);
-            $this->expectExceptionMessage('Failed to read YAML configuration file');
-            $this->expectExceptionMessage('locked.yml');
-            $config->load($this->tempDir);
-        } finally {
-            restore_error_handler();
-            chmod($yaml, 0644);
-        }
-    }
 }

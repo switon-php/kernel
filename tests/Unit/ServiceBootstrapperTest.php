@@ -221,7 +221,7 @@ class ServiceBootstrapperTest extends TestCase
 
         $bootstrapper->bootstrap();
 
-        $expected = dirname(__DIR__, 2) . '/resources';
+        $expected = strtr(dirname(__DIR__, 2), '\\', '/') . '/resources';
         $pathAlias = $this->container->get(PathAliasInterface::class);
 
         $this->assertSame($expected, ResourceAliasServiceProvider::$bootAlias);
@@ -240,7 +240,7 @@ class ServiceBootstrapperTest extends TestCase
 
         $bootstrapper->bootstrap();
 
-        $expected = dirname(__DIR__, 2) . '/tests/Fixtures';
+        $expected = strtr(dirname(__DIR__, 2), '\\', '/') . '/tests/Fixtures';
         $pathAlias = $this->container->get(PathAliasInterface::class);
 
         $this->assertSame($expected, CustomResourceAliasServiceProvider::$bootAlias);
